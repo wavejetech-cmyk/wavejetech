@@ -249,20 +249,6 @@ section{position:relative}
   .node .arrow{display:none}
 }
 
-/* ---------- metrics ---------- */
-.metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--line)}
-.metric{padding:40px clamp(12px,2vw,32px) 40px 0;border-bottom:1px solid var(--line);display:grid;gap:12px;align-content:start}
-.metric:not(:nth-child(3n+1)){padding-left:clamp(20px,3vw,40px);border-left:1px solid var(--line)}
-.metric .val{font-family:var(--f-display);font-weight:900;font-size:clamp(4.5rem,9vw,8.5rem);line-height:.8;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.metric .val.pending{color:transparent;-webkit-text-stroke:1.2px rgba(140,170,255,.5)}
-.metric .val sup{font-size:.4em;vertical-align:top;margin-left:4px;color:var(--cyan);-webkit-text-stroke:0}
-.metric h3{margin:0;font-size:1.05rem;font-weight:500}
-.metric .tc{font-family:var(--f-tc);font-size:12.5px;color:var(--muted);letter-spacing:.2em}
-.metric .state{justify-self:start;margin-top:6px;font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:5px 10px;border-radius:999px;border:1px dashed var(--line-2);color:var(--muted)}
-.metric .state.ok{border-style:solid;border-color:rgba(67,207,255,.4);color:var(--cyan)}
-@media (max-width:860px){.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.metric:not(:nth-child(3n+1)){padding-left:0;border-left:0}.metric:nth-child(even){padding-left:clamp(16px,3vw,32px);border-left:1px solid var(--line)}}
-@media (max-width:480px){.metric-grid{grid-template-columns:1fr}.metric:nth-child(even){padding-left:0;border-left:0}}
-
 /* ---------- vision ---------- */
 .vision{overflow:hidden;isolation:isolate;padding-block:clamp(110px,14vw,200px)}
 .vision canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-1}
@@ -862,20 +848,6 @@ img{max-width:100%}
   </div>
 </section>
 
-<!-- METRICS -->
-<section class="sec" id="impact" aria-labelledby="impactTitle" style="padding-top:0">
-  <div class="wrap">
-    <div class="sec-head rv">
-      <div>
-        <p class="eyebrow">Impact <span class="tc">影響力</span></p>
-        <h2 class="display h2" id="impactTitle">Measured,<br>not imagined.</h2>
-      </div>
-      <p class="lede">數字只在查證後公開。在那之前，這些欄位保持空白——一份隨著實際成果逐步填滿的誠實紀錄。</p>
-    </div>
-    <div class="metric-grid" id="metrics"></div>
-  </div>
-</section>
-
 <!-- VISION -->
 <section class="vision" id="vision" aria-labelledby="visionTitle">
   <canvas id="visionCanvas" aria-hidden="true"></canvas>
@@ -1065,17 +1037,6 @@ var ICONS = {
    EDITABLE CONTENT
    ========================================================= */
 
-/* Metrics: set `value` to a verified number to publish it (e.g. value: 24, suffix: "+").
-   Leave value null to show "—" with a 即將公布 state. */
-var METRICS = [
-  {label:"AI 與智慧系統專案",   en:"AI & Intelligent Systems", value:null, suffix:""},
-  {label:"私有 AI 部署",       en:"On-Premise AI",            value:null, suffix:""},
-  {label:"教育訓練場次",       en:"Education & Training",     value:null, suffix:""},
-  {label:"3D 列印與原型",      en:"SLA & FDM Printing",       value:null, suffix:""},
-  {label:"合作單位",           en:"Partner Organizations",    value:null, suffix:""},
-  {label:"專案與合作",         en:"Projects & Collaborations",value:null, suffix:""}
-];
-
 var PILLARS = [
   {id:"ai", icon:"ai", en:"AI & Intelligent Systems", area:"AI & Intelligent Systems｜AI 與智慧系統",
    one:"AI Agent、企業 AI、流程自動化、私有 AI",
@@ -1244,23 +1205,6 @@ TECH.forEach(function(T){
   chips.appendChild(li);
 });
 
-/* ================= Metrics ================= */
-$("#metrics").innerHTML = METRICS.map(function(m,i){
-  var has = typeof m.value === "number";
-  return '<div class="metric rv"><div class="val' + (has ? '' : ' pending') + '" data-i="' + i + '">' +
-    (has ? '0' : '—') + (has && m.suffix ? '<sup>' + m.suffix + '</sup>' : '') + '</div>' +
-    '<h3 class="zh">' + esc(m.label) + '</h3><span class="tc" style="font-family:var(--f-mono);letter-spacing:.12em">' + esc(m.en) + '</span>' +
-    '<span class="state' + (has ? ' ok' : '') + '">' + (has ? '已查證 Verified' : '即將公布 Coming Soon') + '</span></div>';
-}).join("");
-function countUp(el){
-  var m = METRICS[+el.getAttribute("data-i")]; if(typeof m.value !== "number") return;
-  var sup = m.suffix ? '<sup>' + m.suffix + '</sup>' : '';
-  if(reduce){ el.innerHTML = m.value.toLocaleString() + sup; return; }
-  var t0 = null, dur = 1600;
-  function step(t){ if(!t0) t0 = t; var p = Math.min(1,(t-t0)/dur); var e = 1 - Math.pow(1-p,3);
-    el.innerHTML = Math.round(m.value*e).toLocaleString() + sup; if(p<1) requestAnimationFrame(step); }
-  requestAnimationFrame(step);
-}
 /* ================= Nav ================= */
 var nav = $("#nav"), prog = $("#progress");
 function onScroll(){
@@ -1305,12 +1249,7 @@ if ("IntersectionObserver" in window && !reduce){
   }, {rootMargin:"0px 0px -8% 0px"});
   rvs.forEach(function(el){ ro.observe(el); });
 }
-if ("IntersectionObserver" in window){
-  var mo = new IntersectionObserver(function(entries){
-    entries.forEach(function(en){ if(en.isIntersecting){ countUp(en.target); mo.unobserve(en.target); } });
-  }, {threshold:.4});
-  $$(".metric .val").forEach(function(v){ mo.observe(v); });
-} else { $$(".metric .val").forEach(countUp); }
+
 
 /* glass cursor glow */
 $$(".glass").forEach(function(g){
